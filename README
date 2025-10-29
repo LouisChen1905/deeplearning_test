@@ -1,0 +1,13 @@
+# pytorch_test
+
+Simple PyTorch project template for experiments and demos.
+
+## Overview
+This repository contains example training, evaluation, and inference code using PyTorch. It is intended as a minimal starting point for small experiments and learning.
+
+## Requirements
+- Python 3.8+
+- PyTorch (CPU or CUDA) compatible with your CUDA/toolkit
+- Common utilities: numpy, tqdm, torchvision (optional)
+
+Example install (adjust torch version per https://pytorch.org):

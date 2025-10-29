@@ -1,0 +1,157 @@
+一、【开发环境部署】
+
+最常见：用于训练或调试 PyTorch 模型。
+
+1. 安装前提
+
+Windows 10/11（64 位）
+
+Python ≥ 3.8
+
+pip ≥ 20
+
+CUDA Toolkit（如果用 GPU）
+
+2. 安装步骤
+
+在命令行（cmd 或 PowerShell）中运行：
+
+🧩 CPU 版本：
+pip install torch torchvision torchaudio
+
+⚙️ GPU 版本：
+
+根据你安装的 CUDA 版本选择（用 nvidia-smi 查看），例如 CUDA 12.1：
+
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+
+更多版本对照表可查：
+👉 https://pytorch.org/get-started/locally/
+
+验证安装：
+import torch
+print(torch.__version__)
+print(torch.cuda.is_available())
+
+二、【推理部署（不需要训练）】
+
+假设你只是想在 Windows 上运行推理（inference），可以用以下轻量方式：
+
+1. TorchScript 部署
+
+将模型转换为 .pt 文件：
+
+traced = torch.jit.trace(model, example_input)
+torch.jit.save(traced, "model.pt")
+
+
+然后在推理端：
+
+import torch
+model = torch.jit.load("model.pt")
+model.eval()
+
+
+优点：可移植性强，不需要完整 Python 源模型。
+
+2. ONNX Runtime 部署
+
+将模型导出为 .onnx 文件：
+
+torch.onnx.export(model, input, "model.onnx", opset_version=17)
+
+
+在部署机器上安装：
+
+pip install onnxruntime-gpu
+
+
+然后推理：
+
+import onnxruntime as ort
+session = ort.InferenceSession("model.onnx", providers=["CUDAExecutionProvider"])
+outputs = session.run(None, {"input": input_numpy})
+
+
+优点：更快，依赖更少；适合嵌入或 C++ 部署。
+
+三、【C++ 部署（libtorch）】
+
+适合你要在 Windows 上 集成进 C++ 应用（比如机器人、控制程序）。
+
+1. 下载 libtorch
+
+到：
+👉 https://pytorch.org/get-started/locally/
+
+选择：
+
+OS: Windows
+
+Package: LibTorch
+
+Language: C++
+
+Compute Platform: CPU 或 CUDA
+
+例如下载：
+
+libtorch-win-shared-with-deps-2.4.0+cu121.zip
+
+
+解压后包含：
+
+libtorch/
+ ├─ bin/
+ ├─ include/
+ ├─ lib/
+ └─ share/
+
+2. CMake 工程配置示例
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+project(TorchExample)
+
+find_package(Torch REQUIRED)
+
+add_executable(example-app main.cpp)
+target_link_libraries(example-app "${TORCH_LIBRARIES}")
+set_property(TARGET example-app PROPERTY CXX_STANDARD 17)
+
+
+运行：
+
+cmake -DCMAKE_PREFIX_PATH="path/to/libtorch" ..
+cmake --build . --config Release
+
+四、【打包部署（如发给客户）】
+
+如果你要分发给不懂装 Python 的终端用户，可用：
+
+1. PyInstaller
+pip install pyinstaller
+pyinstaller --onefile your_inference.py
+
+
+会生成一个可执行文件（your_inference.exe）。
+
+⚠️ 注意：
+
+包含 CUDA 的 PyTorch 程序会打包很大（> 500MB）。
+
+需在相同 CUDA 版本的 Windows 上运行。
+
+五、【轻量化优化】
+
+如果模型太大或运行慢，可考虑：
+
+TorchScript + FP16
+
+ONNX + TensorRT (Windows CUDA Only)
+
+OpenVINO (Intel CPU)
+
+DirectML (AMD GPU)
+安装：
+
+pip install torch-directml
