@@ -46,7 +46,7 @@ class CNN(nn.Module):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNN().to(device)
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-4)  # L2 正则化
 
 # =========================
 # 4. 训练

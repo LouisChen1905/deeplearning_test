@@ -70,14 +70,24 @@ if model is None:
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
+    l1_lambda = 1e-5  # L1 正则化系数
+    l2_lambda = 1e-4  # L2 正则化系数
     # 训练
-    for epoch in range(3):  # 跑 3 轮即可
+    for epoch in range(10):  # 跑 3 轮即可
         running_loss = 0.0
         for i, (inputs, labels) in enumerate(train_loader):
             inputs, labels = inputs.to(device), labels.to(device)
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)
+            
+            # 加上 L1 正则化项
+            l1_norm = sum(p.abs().sum() for p in model.parameters())
+            loss = loss + l1_lambda * l1_norm
+            
+            # 加上 L2 正则化项
+            l2_norm = sum(p.pow(2.0).sum() for p in model.parameters())
+            loss = loss + l2_lambda * l2_norm
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
